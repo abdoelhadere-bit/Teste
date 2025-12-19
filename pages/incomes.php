@@ -1,8 +1,10 @@
 <?php 
-require 'auth.php';
-// echo "User ID: " . $user_id . "<br>";
+require __DIR__ . '/../auth.php';
+require __DIR__ . '/../config.php';
 
-require 'config.php';
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
 
 $sql = $pdo->prepare("SELECT i.*, c.card_name FROM incomes i 
                       LEFT JOIN cards c ON i.card_id = c.id

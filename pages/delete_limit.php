@@ -1,7 +1,11 @@
 
 <?php
-require 'auth.php';
-require 'config.php';
+require __DIR__ . '/../auth.php';
+require __DIR__ . '/../config.php';
+
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
 if(isset($_GET['category'])) {
 $category = $_GET['category'];
 

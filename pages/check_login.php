@@ -1,5 +1,10 @@
 <?php 
-require 'config.php';
+require __DIR__ . '/../config.php';
+
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+
 require 'mail_config.php';
 
 session_start();
@@ -17,7 +22,7 @@ if($_SERVER['REQUEST_METHOD'] === 'POST'){
         exit;
     }
 
-    $sqlCheck = $pdo->prepare("SELECT * FROM regiser WHERE email = ?");
+    $sqlCheck = $pdo->prepare("SELECT * FROM register WHERE email = ?");
     $sqlCheck->execute([$email]);
 
     $user = $sqlCheck->fetch(PDO::FETCH_ASSOC);
@@ -29,7 +34,7 @@ if($_SERVER['REQUEST_METHOD'] === 'POST'){
         $expires = date('Y-m-d H:i:s', strtotime('+10 minute'));
         
         //Sauvgarde OTP
-        $update = $pdo->prepare("UPDATE regiser SET otp_code = ?, otp_expire = ?, otp_verified = 0 WHERE id = ?");
+        $update = $pdo->prepare("UPDATE register SET otp_code = ?, otp_expire = ?, otp_verified = 0 WHERE id = ?");
         $update->execute([$otp, $expires, $user['id']]);
 
         //Envoyer l'email

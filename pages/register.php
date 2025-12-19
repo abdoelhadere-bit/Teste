@@ -1,5 +1,9 @@
 <?php
-require 'config.php';
+require __DIR__ . '/../config.php';
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+
 session_start();
 $errors = $_SESSION['errors'] ?? [];
 $old = $_SESSION['old'] ?? [];

@@ -1,5 +1,10 @@
 <?php 
-require 'config.php';
+require __DIR__ . '/../config.php';
+
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+
 session_start();
 if($_SERVER['REQUEST_METHOD'] === 'POST'){
 
@@ -12,7 +17,7 @@ if($_SERVER['REQUEST_METHOD'] === 'POST'){
     $errors = [];
 
     if(empty($name)){
-        $errors[] = "Le nom est equis";
+        $errors[] = "Le nom est requis";
     }
     if(!filter_var($email, FILTER_VALIDATE_EMAIL)){
         $errors[] = "Email non valide ";
@@ -25,7 +30,7 @@ if($_SERVER['REQUEST_METHOD'] === 'POST'){
     }
 
     if(empty($errors)){
-        $sqlCheck = $pdo->prepare("SELECT COUNT(email) FROM regiser WHERE email = ?");
+        $sqlCheck = $pdo->prepare("SELECT COUNT(email) FROM register WHERE email = ?");
         $sqlCheck->execute([$email]);
         $count = $sqlCheck->fetchColumn();
     
@@ -35,7 +40,7 @@ if($_SERVER['REQUEST_METHOD'] === 'POST'){
             //Hash the password
             $hashPassword = password_hash($password, PASSWORD_DEFAULT);
     
-            $sql = $pdo->prepare("INSERT INTO regiser(nom, email, pass) VALUES (?, ?, ?)");
+            $sql = $pdo->prepare("INSERT INTO register(nom, email, pass) VALUES (?, ?, ?)");
             $_SESSION['success'] = "Inscription réussie. Vous pouvez vous connecter.";
             $sql->execute([$name, $email, $hashPassword]);
             header('Location: login.php');

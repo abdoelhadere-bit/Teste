@@ -1,6 +1,10 @@
 <?php 
-require 'auth.php';
-require 'config.php';
+require __DIR__ . '/../auth.php';
+require __DIR__ . '/../config.php';
+
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
 
 if($_SERVER['REQUEST_METHOD'] === 'POST'){
 
@@ -16,8 +20,8 @@ if($_SERVER['REQUEST_METHOD'] === 'POST'){
         try{
             $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
     
-            $sqlCards = $pdo->prepare("INSERT INTO cards(user_id, card_name, bank_name, card_number, card_type, initial_balance) VALUES (?, ?, ?, ?, ?, ?)");
-            $sqlCards->execute([$user_id, $card_name, $bank_name, $card_number, $card_type, $initial_balance]);
+            $sqlCards = $pdo->prepare("INSERT INTO cards(user_id, card_name, bank_name, card_number, initial_balance) VALUES (?, ?, ?, ?, ?)");
+            $sqlCards->execute([$user_id, $card_name, $bank_name, $card_number, $initial_balance]);
             header('Location: cars.php');
             exit;
         }catch(PDOException $e){
@@ -30,8 +34,8 @@ if($_SERVER['REQUEST_METHOD'] === 'POST'){
         try{
             $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
     
-            $sqlCards = $pdo->prepare("UPDATE cards SET card_name = ?, bank_name = ?, card_number = ?, card_type = ?, initial_balance = ? where id = ?");
-            $sqlCards->execute([$card_name, $bank_name, $card_number, $card_type, $initial_balance, $cardId]);
+            $sqlCards = $pdo->prepare("UPDATE cards SET card_name = ?, bank_name = ?, card_number = ?, initial_balance = ? where id = ?");
+            $sqlCards->execute([$card_name, $bank_name, $card_number, $initial_balance, $cardId]);
             header('Location: cars.php');
             exit;
         }catch(PDOException $e){

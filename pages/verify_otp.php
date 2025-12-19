@@ -1,5 +1,9 @@
 <?php 
-require 'config.php';
+require __DIR__ . '/../config.php';
+
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
 
 session_start();
 
@@ -13,7 +17,7 @@ if($_SERVER['REQUEST_METHOD'] === 'POST'){
     $otp = trim($_POST['otp']);
     $user_id = $_SESSION['otp_user_id'];
 
-    $sql = $pdo->prepare("SELECT * FROM regiser WHERE id = ?");
+    $sql = $pdo->prepare("SELECT * FROM register WHERE id = ?");
     $sql->execute([$user_id]);
     $user = $sql->fetch(PDO::FETCH_ASSOC);
 
@@ -24,7 +28,7 @@ if($_SERVER['REQUEST_METHOD'] === 'POST'){
         $_SESSION['user_email'] = $user['email'];
 
         //Netoyage OTP
-        $update = $pdo->prepare("UPDATE regiser SET otp_code = NULL, otp_expire = NULL, otp_verified = 1 where id = ?");
+        $update = $pdo->prepare("UPDATE register SET otp_code = NULL, otp_expire = NULL, otp_verified = 1 where id = ?");
         $update->execute([$user['id']]);
 
         unset($_SESSION['otp_uder_id']);

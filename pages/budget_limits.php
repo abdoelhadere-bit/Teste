@@ -1,6 +1,10 @@
 <?php 
-require 'auth.php';
-require 'config.php';
+require __DIR__ . '/../auth.php';
+require __DIR__ . '/../config.php';
+
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
 
 
 $categories = [
@@ -33,13 +37,14 @@ foreach($categories as $category){
     $expensesArray[$category] = $total;
 }
 
+
 $limitsArray = [];
-foreach($limits as $limit){
+foreach ($limits as $limit) {
     $limitsArray[$limit['category']] = $limit['monthly_limit'];
 }
 
 $budgetData = [];
-foreach($categories as $category){
+foreach($categories as $i => $category){
 
     $limit = $limitsArray[$category] ?? null;
     $spent = $expensesArray[$category];
@@ -53,12 +58,25 @@ foreach($categories as $category){
     }
 
     $budgetData[] = [
+        'id'         =>$i,
         'category'   =>$category,
         'limit'      =>$limit,
         'spent'      =>$spent,
         'rest'       =>$rest,
-        'percentage'=>$percentage
+        'percentage' =>$percentage,
+        'Recurring'  =>$recurringArray[$category] ?? 0
+
     ];
+}
+
+if($_SERVER["REQUEST_METHOD"] == "POST") {
+    $newstat = $_POST["IsActive"];
+    $id_cat = $_POST["id_cat"];
+    $stmt = $pdo->prepare("UPDATE budget_limits SET Recurring = ? where id = ?");
+    $stmt->execute([$newstat, $id_cat]);
+  
+    header("Location: budget_limits.php");
+    exit;
 }
 ?>
 
@@ -238,6 +256,8 @@ foreach($categories as $category){
         </thead>
     <tbody>
     <?php foreach($budgetData as $data): ?>
+        <?php $stat=$data['Recurring']?>
+        <?php $id_Cat=$data['id']?>
         <tr>
             <!-- Catégorie -->
             <td class="font-semibold text-center"><?= htmlspecialchars($data['category']) ?></td>
@@ -290,6 +310,7 @@ foreach($categories as $category){
                     <span class="text-gray-500 text-sm">Aucune limite</span>
                 <?php endif; ?>
             </td>
+
             
             <!-- Actions -->
             <td class="text-center">

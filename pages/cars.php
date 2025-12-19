@@ -1,6 +1,10 @@
 <?php 
-require 'auth.php';
-require 'config.php';
+require __DIR__ . '/../auth.php';
+require __DIR__ . '/../config.php';
+
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
 
 // Récupérer toutes les cartes de l'utilisateur
 $sqlCards = $pdo->prepare("SELECT * FROM cards WHERE user_id = ? ORDER BY created_at DESC");
@@ -194,9 +198,7 @@ foreach($cards as $i => $card) {
                                 <h3 class="text-lg font-bold text-gray-100"><?php echo htmlspecialchars($card['card_name']); ?></h3>
                                 <p class="text-sm text-gray-400"><?php echo htmlspecialchars($card['bank_name']); ?></p>
                             </div>
-                            <span class="card-badge badge-<?php echo strtolower($card['card_type']); ?>">
-                                <?php echo $card['card_type']; ?>
-                            </span>
+                            
                         </div>
 
                         <!-- Numéro de carte -->
@@ -225,7 +227,6 @@ foreach($cards as $i => $card) {
                                     data-name="<?php echo htmlspecialchars($card['card_name']); ?>"
                                     data-bank="<?php echo htmlspecialchars($card['bank_name']); ?>"
                                     data-number="<?php echo htmlspecialchars($card['card_number']); ?>"
-                                    data-type="<?php echo $card['card_type']; ?>"
                                     data-balance="<?php echo $card['initial_balance']; ?>">
                                 Modifier
                             </button>
@@ -288,15 +289,6 @@ foreach($cards as $i => $card) {
                         data-parsley-length-message="Exactement 4 chiffres">
                 </div>
 
-                <div class="mb-4">
-                    <label class="block mb-1 font-semibold text-gray-200">Type de carte</label>
-                    <select name="card_type" id="cardType" required
-                            class="w-full p-2.5 border border-gray-600 rounded-xl bg-gray-900 text-gray-100 focus:ring-2 focus:ring-blue-500">
-                        <option value="Débit">Débit</option>
-                        <option value="Crédit">Crédit</option>
-                        <option value="Cash">Cash</option>
-                    </select>
-                </div>
 
                 <div class="mb-4">
                     <label class="block mb-1 font-semibold text-gray-200">Solde initial</label>
@@ -350,7 +342,6 @@ foreach($cards as $i => $card) {
                 document.getElementById("cardName").value = this.dataset.name;
                 document.getElementById("bankName").value = this.dataset.bank;
                 document.getElementById("cardNumber").value = this.dataset.number;
-                document.getElementById("cardType").value = this.dataset.type;
                 document.getElementById("initialBalance").value = this.dataset.balance;
                 
                 modal.classList.remove("hidden");
