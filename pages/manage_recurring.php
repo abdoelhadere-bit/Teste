@@ -8,7 +8,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 }
 
 $action      = $_POST['action'] ?? 'add';
-$id          = $_POST['id'] ?? null;
+$id          = $_POST['recurringId'] ?? null;
 $type        = $_POST['type'];
 $montant     = $_POST['montant'];
 $category    = $_POST['category'];

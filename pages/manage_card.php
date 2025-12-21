@@ -22,7 +22,7 @@ if($_SERVER['REQUEST_METHOD'] === 'POST'){
     
             $sqlCards = $pdo->prepare("INSERT INTO cards(user_id, card_name, bank_name, card_number, initial_balance) VALUES (?, ?, ?, ?, ?)");
             $sqlCards->execute([$user_id, $card_name, $bank_name, $card_number, $initial_balance]);
-            header('Location: cars.php');
+            header('Location: cards.php');
             exit;
         }catch(PDOException $e){
         die("Erreur lors de l insertion : " .$e->getMessage());
@@ -36,7 +36,7 @@ if($_SERVER['REQUEST_METHOD'] === 'POST'){
     
             $sqlCards = $pdo->prepare("UPDATE cards SET card_name = ?, bank_name = ?, card_number = ?, initial_balance = ? where id = ?");
             $sqlCards->execute([$card_name, $bank_name, $card_number, $initial_balance, $cardId]);
-            header('Location: cars.php');
+            header('Location: cards.php');
             exit;
         }catch(PDOException $e){
         die("Erreur lors de la modification : " .$e->getMessage());

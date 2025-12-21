@@ -2,7 +2,7 @@
 require __DIR__ . '/../auth.php';
 require __DIR__ . '/../config.php';
 
-$id = $_GET['id'] ?? null;
+$id = $_POST['id'] ?? null;
 
 if ($id) {
     $stmt = $pdo->prepare("

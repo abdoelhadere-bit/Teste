@@ -11,7 +11,7 @@ $sql = $pdo->prepare("SELECT i.*, c.card_name FROM incomes i
                       WHERE i.user_id = ? 
                       order by i.dates desc");
 $sql->execute([$user_id]);
-$amouts = $sql->fetchAll(PDO::FETCH_ASSOC);
+$amounts = $sql->fetchAll(PDO::FETCH_ASSOC);
 
 $sqlCards = $pdo->prepare("SELECT * FROM cards WHERE user_id = ?");
 $sqlCards->execute([$user_id]);
@@ -35,187 +35,248 @@ $cards = $sqlCards->fetchAll(PDO::FETCH_ASSOC);
 
     <title>Gestion des Revenus</title>
 
-   <style>
-    body {
-        background: #0f1117;
-        color: #e5e7eb;
-        font-family: Inter, sans-serif;
-    }
+<style>
+        body {
+            background: #0f1117;
+            color: #e5e7eb;
+            font-family: Inter, sans-serif;
+        }
 
-    .card {
-        background: rgba(30, 32, 40, 0.7);
-        backdrop-filter: blur(12px);
-        border: 1px solid rgba(255,255,255,0.05);
-        padding: 24px;
-        border-radius: 16px;
-        box-shadow: 0 4px 30px rgba(0,0,0,0.2);
-    }
+        /* SIDEBAR */
+        .sidebar {
+    width: 280px;
+    height: 100vh;
+    position: fixed;
+    left: 0;
+    top: 0;
+    background: linear-gradient(180deg,#1a1d29,#0f1117);
+    border-right: 1px solid rgba(255,255,255,.08);
 
-    table {
-        width: 100%;
-        border-collapse: collapse;
-    }
+    /* IMPORTANT */
+    display: flex;
+    flex-direction: column;
+}
 
-    table thead tr {
-        background: rgba(255,255,255,0.04);
-    }
+.sidebar-item svg {
+    width: 22px;
+    height: 22px;
+    margin-right: 12px;
+}
+        .sidebar-item {
+            display: flex;
+            align-items: center;
+            padding: 14px 20px;
+            margin: 6px 12px;
+            border-radius: 12px;
+            color: #9ca3af;
+            transition: .2s;
+            text-decoration: none;
+        }
 
-    table th {
-        padding: 12px 16px;
-        font-size: 14px;
-        font-weight: 600;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        color: #9ca3af;
-    }
+        .sidebar-item:hover {
+            background: rgba(59,130,246,.1);
+            color: #3b82f6;
+        }
 
-    table tbody tr {
-        background: rgba(255,255,255,0.02);
-        border-bottom: 1px solid rgba(255,255,255,0.05);
-        transition: 0.2s ease;
-    }
+        .sidebar-item.active {
+            background: linear-gradient(135deg,#3b82f6,#2563eb);
+            color: white;
+        }
 
-    table tbody tr:hover {
-        background: rgba(255,255,255,0.08);
-    }
+        /* MAIN */
+        .main {
+            margin-left: 280px;
+            padding: 24px;
+        }
 
-    table td {
-        padding: 14px 16px;
-        font-size: 15px;
-    }
+        .card {
+            background: rgba(30,32,40,.75);
+            backdrop-filter: blur(14px);
+            border: 1px solid rgba(255,255,255,.06);
+            border-radius: 16px;
+            padding: 24px;
+        }
 
-    .btn-primary {
-        background: #3b82f6;
-        padding: 10px 16px;
-        border-radius: 10px;
-        color: white;
-        font-weight: 600;
-        transition: 0.2s;
-    }
+        table th {
+            text-transform: uppercase;
+            font-size: 13px;
+            color: #9ca3af;
+            padding: 12px;
+        }
 
-    .btn-primary:hover {
-        background: #2563eb;
-    }
+        table td {
+            padding: 14px;
+        }
 
-    .btn-warning {
-        background: #f59e0b;
-        padding: 6px 12px;
-        border-radius: 8px;
-        font-size: 14px;
-        color: #1e1e1e;
-        font-weight: 600;
-    }
+        table tr:hover {
+            background: rgba(255,255,255,.06);
+        }
 
-    .btn-danger {
-        background: #ef4444;
-        padding: 6px 12px;
-        border-radius: 8px;
-        font-size: 14px;
-        color: white;
-        font-weight: 600;
-    }
+        .btn-primary {
+            background: linear-gradient(to right,#3b82f6,#2563eb);
+            padding: 10px 16px;
+            border-radius: 10px;
+            font-weight: 600;
+        }
 
-    .header-title {
-        font-size: 32px;
-        font-weight: 700;
-        color: #f3f4f6;
-    }
-</style>
+        .btn-warning {
+            background: rgba(245,158,11,.2);
+            color: #f59e0b;
+            padding: 6px 12px;
+            border-radius: 8px;
+        }
 
+        .btn-danger {
+            background: rgba(239,68,68,.2);
+            color: #ef4444;
+            padding: 6px 12px;
+            border-radius: 8px;
+        }
+
+        .btn-secondary {
+            background: #374151;
+            padding: 10px 16px;
+            border-radius: 10px;
+        }
+    </style>
 </head>
 
-<body class="p-6">
+<body>
 
-       <!-- HEADER -->
-    <div class="max-w-6xl mx-auto mb-10 flex flex-wrap justify-between items-center gap-4 p-4 bg-gray-800/40 backdrop-blur-md rounded-xl border border-gray-700 shadow-lg">
-        <div class="flex flex-col">
-            <!-- Title -->
-            <h1 class="text-3xl font-bold text-gray-100 tracking-wide">
-                Gestion des Revenues
-            </h1>
-            <a href="expenses.php" class="text-blue-400 hover:text-blue-300 hover:underline text-sm">
-                ← Retour aux depenses
+<!-- SIDEBAR -->
+<div class="sidebar">
+    <div class="p-6 border-b border-gray-700/50">
+        <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center font-bold">
+                <?= strtoupper($user_name[0]) ?>
+            </div>
+            <div>
+                <p class="font-semibold"><?= htmlspecialchars($user_name) ?></p>
+                <p class="text-xs text-gray-400">Utilisateur</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Navigation -->
+        <nav class="py-4">
+            <!-- Dashboard -->
+            <a href="dark_dashboard.php" class="sidebar-item">
+                <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                </svg>
+                Dashboard
+            </a>
+
+            <!-- Revenus -->
+            <a href="incomes.php" class="sidebar-item active">
+                <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                Revenus
+            </a>
+
+            <!-- Dépenses -->
+            <a href="expenses.php" class="sidebar-item">
+                <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
+                </svg>
+                Dépenses
+            </a>
+
+            <!-- Mes Cartes -->
+            <a href="cards.php" class="sidebar-item">
+                <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                </svg>
+                Mes Cartes
+            </a>
+
+            <!-- Limites Budgétaires -->
+            <a href="budget_limits.php" class="sidebar-item">
+                <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                </svg>
+                Limites
+            </a>
+
+            <!-- Transactions Récurrentes -->
+            <a href="recurring_transactions.php" class="sidebar-item">
+                <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                </svg>
+                Récurrentes
+            </a>
+
+            <!-- Transferts -->
+            <a href="transfers.php" class="sidebar-item">
+                <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+                </svg>
+                Transferts
+                <!-- <span class="badge">NEW</span> -->
+            </a>
+        </nav>
+
+        <!-- Logout -->
+        <div class="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-700/50">
+            <a href="logout.php" class="sidebar-item bg-red-500/10 hover:bg-red-500/20 text-red-400">
+                <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                </svg>
+                Déconnexion
             </a>
         </div>
-    <!-- Buttons -->
-    <div class="flex flex-col sm:flex-row items-end sm:items-center gap-3">
+</div>
 
-        <!-- Dashboard -->
-        <a href="dark_dashboard.php"
-           class="px-4 py-2 rounded-lg bg-gray-700 text-gray-200 font-semibold shadow hover:bg-gray-600 transition flex items-center gap-2">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                      d="M3 12l2-2m0 0l7-7 7 7m-7-7v18" />
-            </svg>
-            Dashboard
-        </a>
+<!-- MAIN -->
+<div class="main">
 
-        <!-- Add Expense -->
-        <button id="btnAdd"
-            class="px-5 py-2 rounded-lg bg-blue-600 text-white font-semibold shadow hover:bg-blue-700 transition flex items-center gap-2">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                      d="M12 4v16m8-8H4" />
-            </svg>
-            Ajouter un revenue
-        </button>
-
-        <!-- Add cart -->
-        <a href="cars.php"
-           class="px-4 py-2 rounded-lg bg-purple-600 text-white font-semibold shadow hover:bg-purple-700 transition flex items-center gap-2">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                      d="M3 7h18M3 12h18M3 17h18" />
-            </svg>
-            Mes Cartes
-        </a>
-
-        <!-- Log out -->
-        <a href="logout.php" class="flex items-center gap-2 px-4 py-2 rounded-lg bg-red-600 text-white font-semibold shadow hover:bg-red-700 transition">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-            </svg> Logout
-        </a>
-        
+    <!-- HEADER -->
+    <div class="flex justify-between items-center mb-8">
+        <div>
+            <h1 class="text-3xl font-bold">💰 Revenus</h1>
+            <p class="text-gray-400">Gestion de vos revenus</p>
+        </div>
+        <button id="btnAdd" class="btn-primary">+ Ajouter un revenu</button>
     </div>
+
+    <!-- TABLE -->
+    <div class="card overflow-x-auto">
+        <table class="w-full">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Montant</th>
+                    <th>Catégorie</th>
+                    <th>Date</th>
+                    <th>Carte</th>
+                    <th>Description</th>
+                    <th class="text-center">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+            <?php foreach($amounts as $a): ?>
+                <tr>
+                    <td><?= $a['id'] ?></td>
+                    <td class="text-green-400 font-semibold"><?= $a['montant'] ?> DH</td>
+                    <td><?= $a['category'] ?></td>
+                    <td><?= date('Y-m-d', strtotime($a['dates'])) ?></td>
+                    <td><?= $a['card_name'] ?: '—' ?></td>
+                    <td><?= htmlspecialchars($a['decription']) ?></td>
+                    <td class="text-center flex justify-center gap-2">
+                        <button class="btn-warning editBtn">Modifier</button>
+                        <a href="delete.php?id=<?= $a['id'] ?>&source=incomes" class="btn-danger">
+                            Supprimer
+                        </a>
+                    </td>
+                </tr>
+            <?php endforeach; ?>
+            </tbody>
+        </table>
+    </div>
+
 </div>
 
-    <!-- TABLE CARD -->
-   <div class="max-w-5xl mx-auto card mt-10">
-
-    <table>
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>Montant</th>
-                <th>Categorie</th>
-                <th>Date</th>
-                <th>Carte</th>
-                <th>Description</th>
-                <th class="text-center">Actions</th>
-            </tr>
-        </thead>
-
-        <tbody>
-        <?php foreach($amouts as $i => $amout) :?>
-            <tr>
-                <td><?= $amout['id'] ?></td>
-                <td><?= $amout['montant'] ?></td>
-                <td><?= $amout['category'] ?></td>
-                <td><?= date('Y-m-d', strtotime($amout['dates'])) ?></td>
-                <td><?= $amout['card_name'] ?: 'Aucune carte' ?></td>
-                <td><?= $amout['decription'] ?></td>
-
-                <td class="text-center">
-                    <button class="btn-warning editBtn">Modifier</button>
-                    <a href="delete.php?id=<?= $amout['id'] ?>&source=incomes" class="btn-danger">Supprimer</a>
-                </td>
-            </tr>
-        <?php endforeach ;?>
-        </tbody>
-    </table>
-
-</div>
 
 
     <!-- MODAL -->

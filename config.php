@@ -1,7 +1,7 @@
 <?php
 try {
     $pdo = new PDO(
-        'mysql:host=localhost;dbname=smart_wallet;charset=utf8mb4',
+        'mysql:host=127.0.0.1;dbname=smart_wallet;charset=utf8mb4',
         'smart_user',
         'Abderrah;ane'
     );

@@ -31,7 +31,26 @@ CREATE TABLE recurring_transactions (
     FOREIGN KEY (card_id) REFERENCES cards(id) ON DELETE CASCADE
 )
 
-select * from recurring_transactions
+CREATE TABLE transfers (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    sender_id INT NOT NULL,
+    receiver_id INT NOT NULL,
+    card_id INT NOT NULL,
+    amount DECIMAL(10,2) NOT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+
+select * from recurring_transactions  
+
+select * from transfers
+
+DESCRIBE cards
+
+select * from register
+
+ALTER TABLE cards ADD is_primary TINYINT(1) DEFAULT 0;
+
 
 alter table budget_limits
 add column Recurring TINYINT(1) not null default 0
@@ -41,6 +60,7 @@ ALTER TABLE budget_limits DROP COLUMN Recurring;
 
 use smart_wallet
 
+UPDATE recurring_transactions SET last_generated = null;
 
 
 

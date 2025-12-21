@@ -58,288 +58,285 @@ foreach($categories as $i => $category){
     }
 
     $budgetData[] = [
-        'id'         =>$i,
         'category'   =>$category,
         'limit'      =>$limit,
         'spent'      =>$spent,
         'rest'       =>$rest,
-        'percentage' =>$percentage,
-        'Recurring'  =>$recurringArray[$category] ?? 0
-
+        'percentage' =>$percentage
     ];
 }
 
-if($_SERVER["REQUEST_METHOD"] == "POST") {
-    $newstat = $_POST["IsActive"];
-    $id_cat = $_POST["id_cat"];
-    $stmt = $pdo->prepare("UPDATE budget_limits SET Recurring = ? where id = ?");
-    $stmt->execute([$newstat, $id_cat]);
-  
-    header("Location: budget_limits.php");
-    exit;
-}
 ?>
 
 
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta charset="UTF-8">
+    <title>Limites Budgétaires - Smart Wallet</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/parsley.js/2.9.2/parsley.min.js"></script>
-    <title>Limites Budgétaires</title>
-<style>
-    body {
-        background: #0f1117;
-        color: #e5e7eb;
-        font-family: Inter, sans-serif;
-    }
 
-    .card {
-        background: rgba(30, 32, 40, 0.7);
-        backdrop-filter: blur(12px);
-        border: 1px solid rgba(255,255,255,0.05);
-        padding: 24px;
-        border-radius: 16px;
-        box-shadow: 0 4px 30px rgba(0,0,0,0.2);
-    }
+    <style>
+        body {
+            background: #0f1117;
+            color: #e5e7eb;
+            font-family: Inter, sans-serif;
+        }
 
-    table {
-        width: 100%;
-        border-collapse: collapse;
-    }
+        /* SIDEBAR (IDENTIQUE incomes.php) */
+        .sidebar {
+    width: 280px;
+    height: 100vh;
+    position: fixed;
+    left: 0;
+    top: 0;
+    background: linear-gradient(180deg,#1a1d29,#0f1117);
+    border-right: 1px solid rgba(255,255,255,.08);
 
-    table thead tr {
-        background: rgba(255,255,255,0.04);
-    }
+    /* IMPORTANT */
+    display: flex;
+    flex-direction: column;
+}
 
-    table th {
-        padding: 12px 16px;
-        font-size: 14px;
-        font-weight: 600;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        color: #9ca3af;
-    }
+.sidebar-item svg {
+    width: 22px;
+    height: 22px;
+    margin-right: 12px;
+}
+        .sidebar-item {
+            display: flex;
+            align-items: center;
+            padding: 14px 20px;
+            margin: 6px 12px;
+            border-radius: 12px;
+            color: #9ca3af;
+            transition: .2s;
+            text-decoration: none;
+        }
 
-    table tbody tr {
-        background: rgba(255,255,255,0.02);
-        border-bottom: 1px solid rgba(255,255,255,0.05);
-        transition: 0.2s ease;
-    }
+        .sidebar-item:hover {
+            background: rgba(59,130,246,.1);
+            color: #3b82f6;
+        }
 
-    table tbody tr:hover {
-        background: rgba(255,255,255,0.08);
-    }
+        .sidebar-item.active {
+            background: linear-gradient(135deg,#3b82f6,#2563eb);
+            color: white;
+        }
 
-    table td {
-        padding: 14px 16px;
-        font-size: 15px;
-    }
+        /* MAIN */
+        .main {
+            margin-left: 280px;
+            padding: 24px;
+        }
 
-    .btn-primary {
-        background: #3b82f6;
-        padding: 10px 16px;
-        border-radius: 10px;
-        color: white;
-        font-weight: 600;
-        transition: 0.2s;
-    }
+        .card {
+            background: rgba(30,32,40,.75);
+            backdrop-filter: blur(14px);
+            border: 1px solid rgba(255,255,255,.06);
+            border-radius: 16px;
+            padding: 24px;
+        }
 
-    .btn-primary:hover {
-        background: #2563eb;
-    }
+        table th {
+            text-transform: uppercase;
+            font-size: 13px;
+            color: #9ca3af;
+            padding: 12px;
+        }
 
-    .btn-warning {
-        background: #f59e0b;
-        padding: 6px 12px;
-        border-radius: 8px;
-        font-size: 14px;
-        color: #1e1e1e;
-        font-weight: 600;
-    }
+        table td {
+            padding: 14px;
+        }
 
-    .btn-danger {
-        background: #ef4444;
-        padding: 6px 12px;
-        border-radius: 8px;
-        font-size: 14px;
-        color: white;
-        font-weight: 600;
-    }
+        table tr:hover {
+            background: rgba(255,255,255,.06);
+        }
 
-    .btn-secondary {
-        background: rgba(255,255,255,0.1);
-        padding: 8px 14px;
-        border-radius: 8px;
-        color: #e5e7eb;
-        font-weight: 600;
-        transition: 0.2s;
-    }
+        .btn-primary {
+            background: linear-gradient(to right,#3b82f6,#2563eb);
+            padding: 10px 16px;
+            border-radius: 10px;
+            font-weight: 600;
+        }
 
-    .progress-bar {
-        height: 8px;
-        background: rgba(255,255,255,0.1);
-        border-radius: 10px;
-        overflow: hidden;
-        margin-top: 4px;
-    }
+        .btn-warning {
+            background: rgba(245,158,11,.2);
+            color: #f59e0b;
+            padding: 6px 12px;
+            border-radius: 8px;
+        }
 
-    .progress-fill {
-        height: 100%;
-        transition: width 0.3s ease;
-    }
+        .btn-danger {
+            background: rgba(239,68,68,.2);
+            color: #ef4444;
+            padding: 6px 12px;
+            border-radius: 8px;
+        }
 
-    .progress-success {
-        background: linear-gradient(90deg, #22c55e, #16a34a);
-    }
-
-    .progress-warning {
-        background: linear-gradient(90deg, #f59e0b, #d97706);
-    }
-
-    .progress-danger {
-        background: linear-gradient(90deg, #ef4444, #dc2626);
-    }
-</style>
+        .btn-secondary {
+            background: #374151;
+            padding: 10px 16px;
+            border-radius: 10px;
+        }
+    </style>
 </head>
 
-<body class="p-6">
-    <!-- HEADER -->
-<div class="max-w-6xl mx-auto mb-10 flex flex-wrap justify-between items-center gap-4 p-4 bg-gray-800/40 backdrop-blur-md rounded-xl border border-gray-700 shadow-lg">
-    <div class="flex flex-col">
-        <h1 class="text-3xl font-bold text-gray-100 tracking-wide">
-            💰 Limites Budgétaires
-        </h1>
-        <p class="text-gray-400 text-sm mt-1">
-            Bienvenue, <?php echo htmlspecialchars($user_name); ?>
-        </p>
+<body>
+
+<!-- SIDEBAR -->
+<div class="sidebar">
+    <div class="p-6 border-b border-gray-700/50">
+        <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center font-bold">
+                <?= strtoupper($user_name[0]) ?>
+            </div>
+            <div>
+                <p class="font-semibold"><?= htmlspecialchars($user_name) ?></p>
+                <p class="text-xs text-gray-400">Utilisateur</p>
+            </div>
+        </div>
     </div>
 
-    <div class="flex flex-col sm:flex-row items-end sm:items-center gap-3">
-    <a href="dark_dashboard.php" class="px-4 py-2 rounded-lg bg-gray-700 text-gray-200 font-semibold shadow hover:bg-gray-600 transition flex items-center gap-2">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7m-7-7v18" />
-        </svg>
-        Dashboard
-    </a>
+    <!-- Navigation -->
+        <nav class="py-4">
+            <!-- Dashboard -->
+            <a href="dark_dashboard.php" class="sidebar-item">
+                <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                </svg>
+                Dashboard
+            </a>
 
-    <button id="btnAddLimit" class="px-5 py-2 rounded-lg bg-blue-600 text-white font-semibold shadow hover:bg-blue-700 transition flex items-center gap-2">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-        </svg>
-        Définir une limite
-    </button>
+            <!-- Revenus -->
+            <a href="incomes.php" class="sidebar-item">
+                <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                Revenus
+            </a>
 
-    <a href="logout.php" class="px-4 py-2 rounded-lg bg-red-600 text-white font-semibold shadow hover:bg-red-700 transition flex items-center gap-2">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-        </svg>
-        Logout
-    </a>
+            <!-- Dépenses -->
+            <a href="expenses.php" class="sidebar-item">
+                <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
+                </svg>
+                Dépenses
+            </a>
+
+            <!-- Mes Cartes -->
+            <a href="cards.php" class="sidebar-item">
+                <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                </svg>
+                Mes Cartes
+            </a>
+
+            <!-- Limites Budgétaires -->
+            <a href="budget_limits.php" class="sidebar-item active">
+                <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                </svg>
+                Limites
+            </a>
+
+            <!-- Transactions Récurrentes -->
+            <a href="recurring_transactions.php" class="sidebar-item">
+                <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                </svg>
+                Récurrentes
+            </a>
+
+            <!-- Transferts -->
+            <a href="transfers.php" class="sidebar-item">
+                <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+                </svg>
+                Transferts
+                <!-- <span class="badge">NEW</span> -->
+            </a>
+        </nav>
+
+        <!-- Logout -->
+        <div class="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-700/50">
+            <a href="logout.php" class="sidebar-item bg-red-500/10 hover:bg-red-500/20 text-red-400">
+                <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                </svg>
+                Déconnexion
+            </a>
+        </div>
 </div>
+
+<!-- MAIN -->
+<div class="main">
+
+    <!-- HEADER -->
+    <div class="flex justify-between items-center mb-8">
+        <div>
+            <h1 class="text-3xl font-bold">📊 Limites Budgétaires</h1>
+            <p class="text-gray-400">Suivi et contrôle de vos dépenses</p>
+        </div>
+        <button id="btnAddLimit" class="btn-primary">
+            + Définir une limite
+        </button>
+    </div>
+
+    <!-- TABLE -->
+    <div class="card overflow-x-auto">
+        <table class="w-full">
+            <thead>
+                <tr>
+                    <th>Catégorie</th>
+                    <th>Dépensé</th>
+                    <th>Limite</th>
+                    <th>Reste</th>
+                    <th>Progression</th>
+                    <th class="text-center">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+            <?php foreach($budgetData as $data): ?>
+                <tr>
+                    <td class="font-semibold"><?= htmlspecialchars($data['category']) ?></td>
+                    <td><?= number_format($data['spent'],2) ?> DH</td>
+                    <td><?= $data['limit'] !== null ? number_format($data['limit'],2).' DH' : '—' ?></td>
+                    <td class="<?= $data['rest'] >= 0 ? 'text-green-400' : 'text-red-400' ?>">
+                        <?= $data['rest'] !== null ? number_format($data['rest'],2).' DH' : '—' ?>
+                    </td>
+                    <td><?= round($data['percentage'],1) ?>%</td>
+                    <td class="text-center flex justify-center gap-2">
+                        <?php if($data['limit'] !== null): ?>
+                            <button class="btn-warning editLimitBtn"
+                                data-category="<?= $data['category'] ?>"
+                                data-limit="<?= $data['limit'] ?>">
+                                Modifier
+                            </button>
+                            <a href="delete_limit.php?category=<?= urlencode($data['category']) ?>"
+                               class="btn-danger">
+                                Supprimer
+                            </a>
+                        <?php else: ?>
+                            <button class="btn-primary defineLimitBtn"
+                                data-category="<?= $data['category'] ?>">
+                                Définir
+                            </button>
+                        <?php endif; ?>
+                    </td>
+                </tr>
+            <?php endforeach; ?>
+            </tbody>
+        </table>
+    </div>
+
 </div>
 
-<div class="max-w-6xl mx-auto card mt-10">
-    <table>
-        <thead>
-            <tr>
-                <th>Catégorie</th>
-                <th>Dépensé ce mois</th>
-                <th>Limite mensuelle</th>
-                <th>Reste</th>
-                <th>Progression</th>
-                <th class="text-center">Actions</th>
-            </tr>
-        </thead>
-    <tbody>
-    <?php foreach($budgetData as $data): ?>
-        <?php $stat=$data['Recurring']?>
-        <?php $id_Cat=$data['id']?>
-        <tr>
-            <!-- Catégorie -->
-            <td class="font-semibold text-center"><?= htmlspecialchars($data['category']) ?></td>
-            
-            <!-- Dépensé ce mois -->
-            <td class="text-center"><?= number_format($data['spent'], 2) ?> DH</td>
-            
-            <!-- Limite mensuelle -->
-            <td class="text-center">
-                <?php if($data['limit'] !== null): ?>
-                    <?= number_format($data['limit'], 2) ?> DH
-                <?php else: ?>
-                    <span class="text-gray-500">Non définie</span>
-                <?php endif; ?>
-            </td>
-            
-            <!-- Reste -->
-            <td class="text-center">
-                <?php if($data['rest'] !== null): ?>
-                    <span class="<?= $data['rest'] >= 0 ? 'text-green-400' : 'text-red-400' ?>">
-                        <?= number_format($data['rest'], 2) ?> DH
-                    </span>
-                <?php else: ?>
-                    <span class="text-gray-500">-</span>
-                <?php endif; ?>
-            </td>
-            
-            <!-- Barre de progression -->
-            <td class="text-center" style="min-width: 200px;">
-                <?php if($data['limit'] !== null): ?>
-                    <div class="flex items-center gap-2">
-                        <div class="progress-bar flex-1">
-                            <?php 
-                                $percentage = min($data['percentage'], 100); // Limiter à 100% pour la barre
-                                if($data['percentage'] < 75) {
-                                    $colorClass = 'progress-success';
-                                } elseif($data['percentage'] < 100) {
-                                    $colorClass = 'progress-warning';
-                                } else {
-                                    $colorClass = 'progress-danger';
-                                }
-                            ?>
-                            <div class="progress-fill <?= $colorClass ?>" style="width: <?= $percentage ?>%"></div>
-                        </div>
-                        <span class="text-sm font-semibold <?= $data['percentage'] > 100 ? 'text-red-400' : 'text-gray-300' ?>">
-                            <?= round($data['percentage'], 1) ?>%
-                        </span>
-                    </div>
-                <?php else: ?>
-                    <span class="text-gray-500 text-sm">Aucune limite</span>
-                <?php endif; ?>
-            </td>
 
-            
-            <!-- Actions -->
-            <td class="text-center">
-                <?php if($data['limit'] !== null): ?>
-                    <!-- Modifier -->
-                    <button class="btn-warning editLimitBtn"
-                            data-category="<?= htmlspecialchars($data['category']) ?>"
-                            data-limit="<?= $data['limit'] ?>">
-                        Modifier
-                    </button>
-                    <!-- Supprimer -->
-                    <a href="delete_limit.php?category=<?= urlencode($data['category']) ?>" 
-                       class="btn-danger"
-                       onclick="return confirm('Supprimer la limite pour <?= htmlspecialchars($data['category']) ?> ?')">
-                        Supprimer
-                    </a>
-                <?php else: ?>
-                    <!-- Définir -->
-                    <button class="btn-primary defineLimitBtn"
-                            data-category="<?= htmlspecialchars($data['category']) ?>">
-                        Définir limite
-                    </button>
-                <?php endif; ?>
-            </td>
-        </tr>
-    <?php endforeach; ?>
-    </tbody>
-</table>
-</div>
 
 <!-- MODAL AJOUTER/MODIFIER LIMITE -->
 <div id="limitModal" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm flex justify-center items-center z-50">
